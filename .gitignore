@@ -1,0 +1,6 @@
+# Where webstorm keeps files
+# Is it suspicious that WebStorm stores files in the same directory as
+#   IntelliJ's main IDE offering? Is it essentially the same codebase?
+#   Well, that's not for me to say. But yes, of course, WebStorm is just
+#   with an extra coat of paint.
+/.idea/

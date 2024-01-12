@@ -1,56 +1,59 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
 import './App.css';
+import SearchIcon from './search.svg';
+import TestData from './TestData.json';
+import {API_TOKEN} from "./ApiSecret";
+import MovieCard from "./MovieCard";
 
 // Following this tutorial:
 //
 //  https://www.youtube.com/watch?v=b9eMGE7QtTk
 //
 
+const API_URL: string = `https://www.omdbapi.com?apikey=${API_TOKEN}`;
+const searchMovies = async (title: string) => {
+    // encodeURIComponent is not in the original tutorial, but
+    //  seemed too important to sanitize user input here. Obviously, this
+    //  is a toy application, but still.
+    const response = await fetch(`${API_URL}&s=${encodeURIComponent(title)}`);
+    const data = await response.json();
+
+    console.log(data);
+}
+
+const movie1 = TestData[0];
+
 //function App() {
 //  return (
-const App = () => {
-  const [counter, setCounter] = useState(0);
-  const todoListItems = [
-    {summary: 'eat fruit', description: 'have a pear or something'},
-    {summary: 'toast a nut', description: 'toss a peanut into an open flame'},
-  ];
-  useEffect(() => {
-    setCounter(30);
-  }, []);
-  useEffect(() => {
-    alert('you changed counter to ' + counter);
-  }, [counter]);
-  const name = '<a>my friend</a>';
-  const greeting = <p>Say hello to {name.toUpperCase()}</p>;
-  const update = (val: number) => (() => setCounter((prev) => prev + val));
-  return (
-      <div className="App">
-        <button onClick={update(1)}>+</button>
-        <h1>{counter}</h1>
-        <button onClick={update(-1)}>-</button>
-        <header className="App-header">
-          {greeting}
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload. Or don't.
-          </p>
-          <ol>
-            {todoListItems.map((e) => (
-                <TodoListItem summary={e.summary} description={e.description}/>
-            ))}
-          </ol>
-        </header>
-      </div>
-  );
-};
-
-const TodoListItem = (props: any) => {
-  return (
-      <li>
-        <p>{props.summary}</p>
-        <p>{props.description}</p>
-      </li>
-  );
-};
+function App() {
+    const [movies, setMovies] = useState([]);
+    useEffect(() => {
+        // searchMovies('Superman');
+    }, []);
+    /* So, FilmCow is a play on words. Which I just got, lol. */
+    return (
+        <div className='App'>
+            <h1>CinemaBoeuf</h1>
+            <div className={'search'}>
+                <input
+                    placeholder={'Search'}
+                    value={"Superman"}
+                    onChange={() => {
+                    }}
+                />
+                <img
+                    src={SearchIcon}
+                    alt={'search'}
+                    onClick={() => {
+                    }}
+                />
+            </div>
+            <div className={'container'}>
+                <MovieCard movie={movie1}/>
+            </div>
+        </div>
+    );
+}
 
 export default App;

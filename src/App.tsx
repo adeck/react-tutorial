@@ -2,7 +2,6 @@ import React from 'react';
 import {useState, useEffect} from 'react';
 import './App.css';
 import SearchIcon from './search.svg';
-import TestData from './TestData.json';
 import {API_TOKEN} from "./ApiSecret";
 import MovieCard from "./MovieCard";
 
@@ -12,8 +11,6 @@ import MovieCard from "./MovieCard";
 //
 
 const API_URL: string = `https://www.omdbapi.com?apikey=${API_TOKEN}`;
-
-const movie1 = TestData[0];
 
 //function App() {
 //  return (

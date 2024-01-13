@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import './App.css';
 import SearchIcon from './search.svg';
 import {API_TOKEN} from "./ApiSecret";
@@ -26,9 +26,6 @@ function App() {
         setMovies(data.Search);
         console.log(data.Search);
     }
-    useEffect(() => {
-        // searchMovies('Superman');
-    }, [movies]);
     /* So, FilmCow is a play on words. Which I just got, lol. */
     return (
         <div className='App'>

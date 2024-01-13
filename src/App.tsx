@@ -23,8 +23,12 @@ function App() {
         //  is a toy application, but still.
         const response = await fetch(`${API_URL}&s=${encodeURIComponent(title)}`);
         const data = await response.json();
-        setMovies(data.Search);
-        console.log(data.Search);
+        // noinspection JSUnresolvedReference
+        const moviesResp = data?.Search;
+        if (moviesResp?.length > 0) {
+            setMovies(moviesResp);
+        }
+        console.log(moviesResp);
     }
     /* So, FilmCow is a play on words. Which I just got, lol. */
     return (

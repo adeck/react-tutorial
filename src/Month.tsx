@@ -1,27 +1,20 @@
 import React from "react";
 
-
 interface MonthId {
-    year: number,
-    // NOTE: Javascript Date() APIs use a zero-indexed int for months,
-    //          such that 0 -> january and 11 -> december. That seemed to me
-    //          like a perfect recipe for off-by-one errors since there's already
-    //          a standard mapping integers to month numbers (1 -> jan, 12 -> dec).
-    //          So I decided that everywhere I'm using a [0, 11] month, I'd name it
-    //          `monthZeroIdx` to eliminate the risk of misinterpretation.
-    monthZeroIdx: number,
+    firstOfMonth: Date,
 }
-function Month({year, monthZeroIdx}: MonthId) {
+function Month({firstOfMonth} : MonthId) {
     return (<table>
-        <MonthHeader year={year} monthZeroIdx={monthZeroIdx} />
-        <MonthBody year={year} monthZeroIdx={monthZeroIdx}/>
+        <MonthHeader firstOfMonth={firstOfMonth} />
+        <MonthBody firstOfMonth={firstOfMonth} />
     </table>);
 }
-function MonthHeader({year, monthZeroIdx}: MonthId) {
+
+function MonthHeader({firstOfMonth} : MonthId) {
     return (
         <thead>
         <tr>
-            <th colSpan={7}>{year} {getMonthName(monthZeroIdx)}</th>
+            <th colSpan={7}>{firstOfMonth.getFullYear()} {getMonthName(firstOfMonth.getMonth())}</th>
         </tr>
         <tr>{['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'].map((e, i) => (
             <th key={i}>{e}</th>
@@ -30,38 +23,37 @@ function MonthHeader({year, monthZeroIdx}: MonthId) {
     );
 }
 
-const daysInMonth = ({year, monthZeroIdx} : MonthId) => new Date(year, monthZeroIdx + 1, 0).getDate();
+const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
-function MonthBody({year, monthZeroIdx} : MonthId) {
+function MonthBody({firstOfMonth} : MonthId) {
     return (
         <tbody>
-        {getMonthDayIndices({year, monthZeroIdx}).map(
+        {getMonthDayIndices(firstOfMonth).map(
             (dayIdxArr, idx) =>
-                (<Week key={idx} year={year} monthZeroIdx={monthZeroIdx} days={dayIdxArr}/>))
+                (<Week key={idx} firstOfMonth={firstOfMonth} days={dayIdxArr}/>))
         }
         </tbody>
     );
 }
 
 interface WeekProps {
-    year: number,
-    monthZeroIdx: number,
+    firstOfMonth: Date,
     days: number[],
 }
-const Week = ({year, monthZeroIdx, days}: WeekProps) => {
+const Week = ({firstOfMonth, days}: WeekProps) => {
     return (
         <tr>
-            {days.map((day, idx) => (<Day key={idx} year={year} monthZeroIdx={monthZeroIdx} day={day}/>))}
+            {days.map((day, idx) => (
+                <Day key={idx} firstOfMonth={firstOfMonth} day={day}/>))}
         </tr>
     );
 }
 
 interface DayProps {
-    year: number,
-    monthZeroIdx: number,
+    firstOfMonth: Date,
     day: number,
 }
-const Day = ({year, monthZeroIdx, day}: DayProps) => (<td>{day}</td>);
+const Day = ({firstOfMonth, day}: DayProps) => (<td>{day === -1 ? '' : day}</td>);
 
 function getMonthName(monthZeroIdx: number) {
     const tmpDate = new Date(`2020-${monthZeroIdx + 1}-1`);
@@ -69,9 +61,9 @@ function getMonthName(monthZeroIdx: number) {
         { month: "long" }).format(tmpDate);
 }
 
-function getMonthDayIndices({year, monthZeroIdx} : MonthId) : number[][] {
-    const numDaysInMonth = daysInMonth({year, monthZeroIdx});
-    const firstWeekPaddingLength = new Date(year, monthZeroIdx, 1).getDay();
+function getMonthDayIndices(firstOfMonth: Date) : number[][] {
+    const numDaysInMonth = daysInMonth(firstOfMonth);
+    const firstWeekPaddingLength = firstOfMonth.getDay();
     const lastWeekPaddingLength = (7 - (firstWeekPaddingLength + numDaysInMonth) % 7) % 7;
     console.log(`${firstWeekPaddingLength} ${numDaysInMonth} ${lastWeekPaddingLength}`);
     const padding = (length: number) => Array(length).fill(-1);

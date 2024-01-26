@@ -1,16 +1,16 @@
 import React from "react";
 
-interface MonthId {
+interface MonthProps {
     firstOfMonth: Date,
 }
-function Month({firstOfMonth} : MonthId) {
+function Month({firstOfMonth} : MonthProps) {
     return (<table>
         <MonthHeader firstOfMonth={firstOfMonth} />
         <MonthBody firstOfMonth={firstOfMonth} />
     </table>);
 }
 
-function MonthHeader({firstOfMonth} : MonthId) {
+function MonthHeader({firstOfMonth} : MonthProps) {
     return (
         <thead>
         <tr>
@@ -25,7 +25,7 @@ function MonthHeader({firstOfMonth} : MonthId) {
 
 const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
-function MonthBody({firstOfMonth} : MonthId) {
+function MonthBody({firstOfMonth} : MonthProps) {
     return (
         <tbody>
         {getMonthDayIndices(firstOfMonth).map(
@@ -80,3 +80,4 @@ function getMonthDayIndices(firstOfMonth: Date) : number[][] {
 }
 
 export default Month;
+

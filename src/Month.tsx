@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactNode} from "react";
 import {useCalendarState} from "./CalendarEvents";
 
 function Month() {
@@ -23,39 +23,38 @@ function MonthHeader() {
 }
 
 function MonthBody() {
-    const {firstOfMonth} = useCalendarState();
+    const {firstOfMonth, events} = useCalendarState();
+    console.log(events);
+    const eventsByDate = events.reduce((d, elem) => {
+        d[new Date(elem.date).toISOString()] = elem.details;
+        return d;
+    }, {} as {[date: string]: string});
     return (
         <tbody>
         {getMonthDayIndices(firstOfMonth).map(
-            (week, idx) =>
-                (<Week key={idx} days={week}/>))
-        }
+            (week, weekIdx) => (
+                <tr key={weekIdx}>
+                    {week.map((day, dayIdx) => (
+                        <Day key={dayIdx} day={day}>
+                            {eventsByDate[day.toISOString()] ?? ''}
+                        </Day>))}
+                </tr>))}
         </tbody>
-    );
-}
-
-interface WeekProps {
-    days: Date[],
-}
-const Week = ({days}: WeekProps) => {
-    return (
-        <tr>
-            {days.map((day, idx) => (
-                <Day key={idx} day={day}/>))}
-        </tr>
     );
 }
 
 interface DayProps {
     day: Date,
+    children: ReactNode
 }
-function Day({day}: DayProps) {
+function Day({day, children}: DayProps) {
     const {firstOfMonth} = useCalendarState();
     const inMonth = isSameMonth(day, firstOfMonth);
     const classes = `Day ${inMonth ? '' : 'notInMonth'}`;
-   return <td className={classes}>
+    return <td className={classes}>
        <p>{day.getDate()}</p>
-   </td>
+        {children}
+    </td>
 }
 
 function isSameMonth(d: Date, other: Date): boolean {
@@ -86,6 +85,7 @@ function getMonthDayIndices(firstOfMonth: Date) : Date[][] {
     const nextMonth = new Date(firstOfMonth.getFullYear(), firstOfMonth.getMonth() + 1);
     while (sunday < nextMonth) {
         sundays.push(sunday);
+        sunday = timedelta(sunday, 7);
     }
     // Now that I have all the Sundays for each week, generate the rest of the week.
     const getWeek = (d: Date) => {
@@ -93,7 +93,9 @@ function getMonthDayIndices(firstOfMonth: Date) : Date[][] {
             (_, idx) => timedelta(d, idx)
         )
     }
-    return sundays.map(getWeek)
+    const result = sundays.map(getWeek);
+    console.log(result);
+    return result;
 }
 
 export default Month;

@@ -1,5 +1,4 @@
 import React from 'react';
-import {useState} from 'react';
 import Month from './Month';
 import {CalendarEventsProvider, useCalendarState} from './CalendarEvents';
 import './App.css';
@@ -10,14 +9,13 @@ import './App.css';
  *  any month from any year you'd care to visit.
  */
 function App() {
-    const {updateMonth} = useCalendarState();
     return (<div className={"App"}>
         <div className={'Container'}>
-            <NavArrow content={'<'} onClick={() => updateMonth(-1)} />
             <CalendarEventsProvider>
+                <NavArrow forward={false} />
                 <Month />
+                <NavArrow forward={true} />
             </CalendarEventsProvider>
-            <NavArrow content={'>'} onClick={() => updateMonth(+1)} />
         </div>
     </div>);
 }
@@ -25,8 +23,11 @@ function App() {
 /*
  * These are the clickable navigation arrows, for going forward and backward in time.
  */
-function NavArrow(props: {content: string, onClick: React.MouseEventHandler<HTMLDivElement>}) {
-    return (<div className={'NavArrow'} onClick={props.onClick}>{props.content}</div>);
+function NavArrow(props: {forward: boolean}) {
+    const {updateMonth} = useCalendarState();
+    const content = props.forward ? '>' : '<';
+    const delta = props.forward ? 1 : -1;
+    return (<div className={'NavArrow'} onClick={() => updateMonth(delta)}>{content}</div>);
 }
 
 export default App;

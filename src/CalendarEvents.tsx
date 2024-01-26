@@ -1,5 +1,5 @@
 
-import {createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState} from 'react';
+import {createContext, useCallback, useContext, useEffect, useMemo, useReducer} from 'react';
 
 // Roughly followed this tutorial in how I used these react features:
 //  https://www.youtube.com/watch?v=-bEzt5ISACA
@@ -10,8 +10,8 @@ interface CalendarState {
     events: CalendarEvent[];
 }
 
-interface CalendarEvent {
-    date: string,
+export interface CalendarEvent {
+    date: Date,
     details: string
 }
 
@@ -32,10 +32,10 @@ function useCalendarStateSource() : {
     const [{firstOfMonth, events}, dispatch] = useReducer(
         (state: CalendarState, action: CalendarAction) => {
             switch (action.type) {
-                case 'setEvents':
-                    return {...state, events: action.payload};
                 case 'setFirstOfMonth':
                     return {...state, firstOfMonth: action.payload};
+                case 'setEvents':
+                    return {...state, events: action.payload};
             }
         }, {
             firstOfMonth: new Date(today.getFullYear(), today.getMonth()),
@@ -51,10 +51,10 @@ function useCalendarStateSource() : {
                 payload: nxt
             })
         },
-        []
+        [firstOfMonth]
     );
     useEffect(() => {
-        fetch('/events.json')
+        fetch('./events.json')
             .then((response) => response.json())
             .then((data) => dispatch({type: 'setEvents', payload: data}))
     }, [])

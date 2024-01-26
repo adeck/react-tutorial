@@ -1,16 +1,15 @@
 import React from "react";
+import {useCalendarState} from "./CalendarEvents";
 
-interface MonthProps {
-    firstOfMonth: Date,
-}
-function Month({firstOfMonth} : MonthProps) {
+function Month() {
     return (<table>
-        <MonthHeader firstOfMonth={firstOfMonth} />
-        <MonthBody firstOfMonth={firstOfMonth} />
+        <MonthHeader />
+        <MonthBody />
     </table>);
 }
 
-function MonthHeader({firstOfMonth} : MonthProps) {
+function MonthHeader() {
+    const {firstOfMonth} = useCalendarState();
     return (
         <thead>
         <tr>
@@ -23,37 +22,48 @@ function MonthHeader({firstOfMonth} : MonthProps) {
     );
 }
 
-const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-
-function MonthBody({firstOfMonth} : MonthProps) {
+function MonthBody() {
+    const {firstOfMonth} = useCalendarState();
     return (
         <tbody>
         {getMonthDayIndices(firstOfMonth).map(
-            (dayIdxArr, idx) =>
-                (<Week key={idx} firstOfMonth={firstOfMonth} days={dayIdxArr}/>))
+            (week, idx) =>
+                (<Week key={idx} days={week}/>))
         }
         </tbody>
     );
 }
 
 interface WeekProps {
-    firstOfMonth: Date,
-    days: number[],
+    days: Date[],
 }
-const Week = ({firstOfMonth, days}: WeekProps) => {
+const Week = ({days}: WeekProps) => {
     return (
         <tr>
             {days.map((day, idx) => (
-                <Day key={idx} firstOfMonth={firstOfMonth} day={day}/>))}
+                <Day key={idx} day={day}/>))}
         </tr>
     );
 }
 
 interface DayProps {
-    firstOfMonth: Date,
-    day: number,
+    day: Date,
 }
-const Day = ({firstOfMonth, day}: DayProps) => (<td>{day === -1 ? '' : day}</td>);
+function Day({day}: DayProps) {
+    const {firstOfMonth} = useCalendarState();
+    const inMonth = isSameMonth(day, firstOfMonth);
+    const classes = `Day ${inMonth ? '' : 'notInMonth'}`;
+   return <td className={classes}>
+       <p>{day.getDate()}</p>
+   </td>
+}
+
+function isSameMonth(d: Date, other: Date): boolean {
+    return (
+        d.getFullYear() === other.getFullYear()
+        && d.getMonth() === other.getMonth()
+    );
+}
 
 function getMonthName(monthZeroIdx: number) {
     const tmpDate = new Date(`2020-${monthZeroIdx + 1}-1`);
@@ -61,22 +71,29 @@ function getMonthName(monthZeroIdx: number) {
         { month: "long" }).format(tmpDate);
 }
 
-function getMonthDayIndices(firstOfMonth: Date) : number[][] {
-    const numDaysInMonth = daysInMonth(firstOfMonth);
-    const firstWeekPaddingLength = firstOfMonth.getDay();
-    const lastWeekPaddingLength = (7 - (firstWeekPaddingLength + numDaysInMonth) % 7) % 7;
-    console.log(`${firstWeekPaddingLength} ${numDaysInMonth} ${lastWeekPaddingLength}`);
-    const padding = (length: number) => Array(length).fill(-1);
-    const dayIdxArray = [
-        ...padding(firstWeekPaddingLength),
-        ...Array.from(Array(numDaysInMonth).keys()).map((n) => n + 1),
-        ...padding(lastWeekPaddingLength),
-    ];
-    const weeks : number[][] = [];
-    for (let i = 0; i < dayIdxArray.length / 7; i++) {
-        weeks.push(dayIdxArray.slice(i * 7, i * 7 + 7));
+function getMonthDayIndices(firstOfMonth: Date) : Date[][] {
+    // First, get the list of Sundays for each month
+    //      1. Get the first date of the month,
+    //      2. Subtract the weekday from it to get to the Sunday of that week, that's
+    //          the initial value for the list.
+    //      3. Add 7 to that date to generate the next Sunday.
+    //      4. Add that Sunday to the list of Sundays as long as it is not in the next month.
+    const timedelta = (d: Date, daysDelta: number) => {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate() + daysDelta)
     }
-    return weeks;
+    let sunday = timedelta(firstOfMonth, -firstOfMonth.getDay());
+    let sundays : Date[] = []
+    const nextMonth = new Date(firstOfMonth.getFullYear(), firstOfMonth.getMonth() + 1);
+    while (sunday < nextMonth) {
+        sundays.push(sunday);
+    }
+    // Now that I have all the Sundays for each week, generate the rest of the week.
+    const getWeek = (d: Date) => {
+        return Array.from(Array(7)).map(
+            (_, idx) => timedelta(d, idx)
+        )
+    }
+    return sundays.map(getWeek)
 }
 
 export default Month;

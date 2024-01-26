@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState} from 'react';
 import Month from './Month';
-import {CalendarEventsProvider} from './CalendarEvents';
+import {CalendarEventsProvider, useCalendarState} from './CalendarEvents';
 import './App.css';
 
 /*
@@ -10,19 +10,14 @@ import './App.css';
  *  any month from any year you'd care to visit.
  */
 function App() {
-    const today = new Date();
-    const firstOfTodaysMonth = new Date(today.getFullYear(), today.getMonth());
-    const [firstOfMonth, setFirstOfMonth] = useState(firstOfTodaysMonth);
-    const updateMonth = (delta: number) => () => {
-        setFirstOfMonth((cur) => new Date(cur.getFullYear(), cur.getMonth() + delta));
-    };
+    const {updateMonth} = useCalendarState();
     return (<div className={"App"}>
         <div className={'Container'}>
-            <NavArrow content={'<'} onClick={updateMonth(-1)} />
+            <NavArrow content={'<'} onClick={() => updateMonth(-1)} />
             <CalendarEventsProvider>
-                <Month firstOfMonth={firstOfMonth} />
+                <Month />
             </CalendarEventsProvider>
-            <NavArrow content={'>'} onClick={updateMonth(+1)} />
+            <NavArrow content={'>'} onClick={() => updateMonth(+1)} />
         </div>
     </div>);
 }

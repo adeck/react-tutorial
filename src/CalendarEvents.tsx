@@ -1,6 +1,9 @@
 
 import {createContext, useContext, useEffect, useState} from 'react';
 
+// Roughly followed this tutorial in how I used these react features:
+//  https://www.youtube.com/watch?v=-bEzt5ISACA
+
 /*
 // What actually needs to be passed through context.
 interface CalendarState {

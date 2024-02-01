@@ -1,4 +1,4 @@
-import React, {ReactNode} from "react";
+import React, {useMemo, useState} from "react";
 import {CalendarEvent, useCalendarState} from "./CalendarEvents";
 
 function Month() {
@@ -23,30 +23,22 @@ function MonthHeader() {
 }
 
 function MonthBody() {
-    const {firstOfMonth, events, updateEvent} = useCalendarState();
+    const {firstOfMonth, events} = useCalendarState();
     console.log(events);
-    const eventsByDate = events.reduce((d, elem) => {
-        d[new Date(elem.date).toISOString()] = elem;
-        return d;
-    }, {} as {[date: string]: CalendarEvent});
+    const eventsByDate = useMemo(() => events.reduce((d, elem) => {
+            d[new Date(elem.date).toISOString()] = elem;
+            return d;
+        }, {} as {[date: string]: CalendarEvent}),
+        [events]
+    );
     return (
         <tbody>
         {getMonthDayIndices(firstOfMonth).map(
             (week, weekIdx) => (
                 <tr key={weekIdx}>
                     {week.map((day, dayIdx) => (
-                        <td key={dayIdx} onClick={() => {
-                            const curEvent = eventsByDate[day.toISOString()];
-                            if (curEvent) {
-                                updateEvent(curEvent, {
-                                    ...curEvent,
-                                    details: curEvent.details + 'AAA'
-                                });
-                            }
-                        }}>
-                            <p>{day.getDate()}</p>
-                            {eventsByDate[day.toISOString()]?.details ?? ''}
-                        </td>))}
+                        <Day key={dayIdx} day={day} eventsByDate={eventsByDate}/>
+                        ))}
                 </tr>))}
         </tbody>
     );
@@ -54,15 +46,47 @@ function MonthBody() {
 
 interface DayProps {
     day: Date,
-    children: ReactNode
+    eventsByDate: {[date: string]: CalendarEvent}
 }
-function Day({day, children}: DayProps) {
-    const {firstOfMonth} = useCalendarState();
+function Day({day, eventsByDate}: DayProps) {
+    const event = eventsByDate[day.toISOString()] ?? null;
+    const [textInput, setTextInput] = useState(event?.details ?? '');
+    const [editable, setEditable] = useState(false);
+    const {firstOfMonth, updateEvent} = useCalendarState();
     const inMonth = isSameMonth(day, firstOfMonth);
     const classes = `Day ${inMonth ? '' : 'notInMonth'}`;
-    return <td className={classes}>
-       <p>{day.getDate()}</p>
-        {children}
+    function handleSubmit() {
+        setEditable(false);
+        const nxtEvent = textInput === '' ? null : {
+            oid: -1,
+            date: day,
+            details: textInput,
+        } as CalendarEvent;
+        console.log('event + nxtEvent is:');
+        console.log(event);
+        console.log(nxtEvent);
+        updateEvent(event, nxtEvent);
+    }
+    function handleCancel() {
+        setEditable(false);
+        setTextInput(event?.details ?? '');
+    }
+    return <td className={classes} onClick={() => {
+        if (!editable) {
+            setEditable(true);
+        }
+    }}>
+        <p>{day.getDate()}</p>
+        {editable ? <form>
+            <input type={"text"}
+                   value={textInput}
+                   onChange={(e) =>
+                       setTextInput(e.target.value)}></input>
+            <button onClick={handleSubmit}>Submit</button>
+            <button onClick={handleCancel}>Cancel</button>
+        </form>
+        : <p>{event?.details ?? ''}</p>
+        }
     </td>
 }
 
@@ -76,10 +100,10 @@ function isSameMonth(d: Date, other: Date): boolean {
 function getMonthName(monthZeroIdx: number) {
     const tmpDate = new Date(`2020-${monthZeroIdx + 1}-1`);
     return new Intl.DateTimeFormat("en-US",
-        { month: "long" }).format(tmpDate);
+        {month: "long"}).format(tmpDate);
 }
 
-function getMonthDayIndices(firstOfMonth: Date) : Date[][] {
+function getMonthDayIndices(firstOfMonth: Date): Date[][] {
     // First, get the list of Sundays for each month
     //      1. Get the first date of the month,
     //      2. Subtract the weekday from it to get to the Sunday of that week, that's

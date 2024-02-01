@@ -26,7 +26,7 @@ function useCalendarStateSource() : {
     firstOfMonth: Date,
     events: CalendarEvent[],
     updateMonth: (delta: number) => void,
-    updateEvent: (orig: CalendarEvent, modified: CalendarEvent) => void
+    updateEvent: (orig: CalendarEvent | null, modified: CalendarEvent | null) => void
 } {
     type CalendarAction =
         | {type: 'setFirstOfMonth', payload: Date}
@@ -73,13 +73,13 @@ function useCalendarStateSource() : {
                 nxtEvents = nxtEvents.filter((e) => e.oid !== orig.oid);
             }
             if (modified !== null) {
-                nxtEvents.push({...modified, oid: maxOid});
+                nxtEvents = [...nxtEvents, {...modified,  oid: maxOid}];
                 setMaxOid((cur) => cur + 1);
-                dispatch({
-                    type: 'setEvents',
-                    payload: nxtEvents
-                });
             }
+            dispatch({
+                type: 'setEvents',
+                payload: nxtEvents
+            });
         }, [events, maxOid]
     );
 

@@ -2,9 +2,10 @@ import React, {useMemo, useState} from "react";
 import {CalendarEvent, useCalendarState} from "./CalendarEvents";
 
 function Month() {
+    const {firstOfMonth} = useCalendarState();
     return (<table>
         <MonthHeader />
-        <MonthBody />
+        <MonthBody key={firstOfMonth.toISOString()} />
     </table>);
 }
 
@@ -15,7 +16,7 @@ function MonthHeader() {
         <tr>
             <th colSpan={7}>{firstOfMonth.getFullYear()} {getMonthName(firstOfMonth.getMonth())}</th>
         </tr>
-        <tr>{['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'].map((e, i) => (
+        <tr>{['Su', 'M', 'T', 'W', 'Th', 'F', 'Sa'].map((e, i) => (
             <th key={i}>{e}</th>
         ))}</tr>
         </thead>

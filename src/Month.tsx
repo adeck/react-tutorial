@@ -1,5 +1,5 @@
 import React, {ReactNode} from "react";
-import {useCalendarState} from "./CalendarEvents";
+import {CalendarEvent, useCalendarState} from "./CalendarEvents";
 
 function Month() {
     return (<table>
@@ -23,21 +23,30 @@ function MonthHeader() {
 }
 
 function MonthBody() {
-    const {firstOfMonth, events} = useCalendarState();
+    const {firstOfMonth, events, updateEvent} = useCalendarState();
     console.log(events);
     const eventsByDate = events.reduce((d, elem) => {
-        d[new Date(elem.date).toISOString()] = elem.details;
+        d[new Date(elem.date).toISOString()] = elem;
         return d;
-    }, {} as {[date: string]: string});
+    }, {} as {[date: string]: CalendarEvent});
     return (
         <tbody>
         {getMonthDayIndices(firstOfMonth).map(
             (week, weekIdx) => (
                 <tr key={weekIdx}>
                     {week.map((day, dayIdx) => (
-                        <Day key={dayIdx} day={day}>
-                            {eventsByDate[day.toISOString()] ?? ''}
-                        </Day>))}
+                        <td key={dayIdx} onClick={() => {
+                            const curEvent = eventsByDate[day.toISOString()];
+                            if (curEvent) {
+                                updateEvent(curEvent, {
+                                    ...curEvent,
+                                    details: curEvent.details + 'AAA'
+                                });
+                            }
+                        }}>
+                            <p>{day.getDate()}</p>
+                            {eventsByDate[day.toISOString()]?.details ?? ''}
+                        </td>))}
                 </tr>))}
         </tbody>
     );
